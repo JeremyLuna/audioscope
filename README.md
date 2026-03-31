@@ -15,6 +15,7 @@ This project requires `portaudio` to be installed on your system.
 **macOS (using Homebrew):**
 ```bash
 brew install portaudio
+brew install pkg-config
 ```
 
 **Other Systems:**
@@ -26,6 +27,12 @@ Once the dependencies are installed, you can build and run the application using
 
 ```bash
 cargo run --release -- config.toml
+cargo update -p rustc-serialize --precise 0.3.25 
+```
+
+I also run like this to avoid all the warnings and focus on the errors:
+```bash
+RUSTFLAGS="-Awarnings" cargo run --release -- config.toml
 ```
 
 This will start the audio visualizer using your default audio input device. On macOS, this is typically the built-in microphone.
