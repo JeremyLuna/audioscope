@@ -22,12 +22,12 @@ use glium::glutin::event::{
 };
 use glium::glutin::event_loop::ControlFlow;
 
-use file_loader::load_from_file;
-use config::{
+use crate::file_loader::load_from_file;
+use crate::config::{
     Config,
-    Uniforms
+    Uniforms,
 };
-use audio::{
+use crate::audio::{
     MultiBuffer,
 };
 

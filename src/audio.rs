@@ -16,8 +16,8 @@ use num::complex::Complex;
 use rustfft::algorithm::Radix4;
 use rustfft::FFT;
 
-use config::Config;
-use display::Vec4;
+use crate::config::Config;
+use crate::display::Vec4;
 
 pub type MultiBuffer = Arc<Vec<Mutex<AudioBuffer>>>;
 pub type PortAudioStream = Stream<NonBlocking, Input<f32>>;

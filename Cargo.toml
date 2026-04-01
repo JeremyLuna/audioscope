@@ -2,10 +2,11 @@
 name = "audioscope"
 version = "0.1.0"
 authors = ["delu <davidelu93@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-toml = "0.2.1"
-rustc-serialize = "*"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.7"
 glium = "0.29.1"
 portaudio = "0.7.0"
 num = "*"
