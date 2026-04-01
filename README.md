@@ -27,7 +27,6 @@ Once the dependencies are installed, you can build and run the application using
 
 ```bash
 cargo run --release -- config.toml
-cargo update -p rustc-serialize --precise 0.3.25 
 ```
 
 I also run like this to avoid all the warnings and focus on the errors:
