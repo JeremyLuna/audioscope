@@ -5,7 +5,23 @@ if (document.location.hostname !== 'localhost' && window.location.protocol !== '
 let AudioContext = window.AudioContext || window.webkitAudioContext
 navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia)
 
-function getMic (audio) {
+export function getMic (context) {
+  const constraints = {
+    audio: {
+      channelCount: 2,
+      echoCancellation: false,
+      autoGainControl: false,
+      noiseSuppression: false,
+      highpassFilter: false
+    },
+    video: false
+  }
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    return navigator.mediaDevices.getUserMedia(constraints)
+      .then(stream => context.createMediaStreamSource(stream))
+  }
+
   return new Promise((resolve, reject) => {
     const options = {
       video: false,
@@ -23,11 +39,24 @@ function getMic (audio) {
       }
     }
     const onGetUserMedia = (stream) => {
-      let input = audio.createMediaStreamSource(stream)
+      const input = context.createMediaStreamSource(stream)
       resolve(input)
     }
     navigator.getUserMedia(options, onGetUserMedia, reject)
   })
+}
+
+export async function getFileSource (context, file) {
+  const arrayBuffer = await file.arrayBuffer()
+  const audioBuffer = await new Promise((resolve, reject) => {
+    context.decodeAudioData(arrayBuffer, resolve, reject)
+  })
+
+  const source = context.createBufferSource()
+  source.buffer = audioBuffer
+  source.loop = true
+  source.start(0)
+  return source
 }
 
 // const FFT_SIZE = 1024 // guessing webaudio will choose this length
@@ -73,41 +102,21 @@ function createBufferCopy (context, buffer) {
   return copyNode
 }
 
-// function createMidSide (context, N) {
-//   let midSide = context.createScriptProcessor(N, 2, 2)
-//   midSide.onaudioprocess = e => {
-//     let left = e.inputBuffer.getChannelData(0)
-//     let right = e.inputBuffer.getChannelData(1)
-//     let mid = e.outputBuffer.getChannelData(0)
-//     let side = e.outputBuffer.getChannelData(1)
-//     for (let i = 0; i < left.length; i++) {
-//       mid[i] = 0.5 * (left[i] + right[i])
-//       side[i] = 0.5 * (left[i] - right[i])
-//     }
-//   }
-// }
+export default async function createAudio (N, sourcePromise, context = new AudioContext()) {
+  const timeSamples = new Float32Array(N)
+  const quadSamples = new Float32Array(N)
 
-export default function createAudio (N) {
-  let context = new AudioContext()
+  const [delay, hilbert] = createHilbertFilter(context, N)
+  const time = createBufferCopy(context, timeSamples)
+  const quad = createBufferCopy(context, quadSamples)
 
-  let timeSamples = new Float32Array(N)
-  let quadSamples = new Float32Array(N)
-
-  let [delay, hilbert] = createHilbertFilter(context, N)
-  let time = createBufferCopy(context, timeSamples)
-  let quad = createBufferCopy(context, quadSamples)
-
-  getMic(context).then(input => {
-    input.connect(delay)
-    input.connect(hilbert)
-    hilbert.connect(time)
-    delay.connect(quad)
-    time.connect(context.destination)
-    quad.connect(context.destination)
-  }).catch(err => {
-    window.alert('audio setup failed')
-    console.error(err)
-  })
+  const input = await sourcePromise
+  input.connect(delay)
+  input.connect(hilbert)
+  hilbert.connect(time)
+  delay.connect(quad)
+  time.connect(context.destination)
+  quad.connect(context.destination)
 
   return {
     getContext () {

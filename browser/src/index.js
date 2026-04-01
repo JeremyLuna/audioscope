@@ -1,34 +1,95 @@
-import createAudio from './audio'
+import createAudio, { getMic, getFileSource } from './audio'
 import createDisplay from './display'
 
-let canvas = document.getElementById('c')
+const AudioContext = window.AudioContext || window.webkitAudioContext
+const canvas = document.getElementById('c')
+const startup = document.getElementById('startup')
+const micButton = document.getElementById('use-mic')
+const fileButton = document.getElementById('use-file')
+const fileInput = document.getElementById('file-input')
 
-let N = 512
+const N = 512
 
-let audio = createAudio(N)
-// const xAxis = Array(N).fill().map((_, i) => (i / (N - 1)) * 2.0 - 1.0)
+let audio = null
+let display = null
+let timer = null
 
-let display = createDisplay(canvas, N)
+function hideStartup () {
+  if (startup) {
+    startup.style.display = 'none'
+  }
+}
 
-let timer = null;
-(function loop () {
-  let samplesX = audio.getTimeSamples()
-  let samplesY = audio.getQuadSamples()
+function showStartup () {
+  if (startup) {
+    startup.style.display = 'flex'
+  }
+}
 
-  display.draw(samplesX, samplesY)
-  timer = window.requestAnimationFrame(loop)
-  // timer = setTimeout(loop, 1000)
-})()
+function startLoop () {
+  if (!audio || !display) {
+    return
+  }
 
-// … the application entry module
-// As it doesn’t export it can accept itself. A dispose handler can pass the application state on replacement.
+  function loop () {
+    const samplesX = audio.getTimeSamples()
+    const samplesY = audio.getQuadSamples()
+
+    display.draw(samplesX, samplesY)
+    timer = window.requestAnimationFrame(loop)
+  }
+
+  loop()
+}
+
+async function startVisualization (sourcePromise, context) {
+  try {
+    audio = await createAudio(N, sourcePromise, context)
+    display = createDisplay(canvas, N)
+    hideStartup()
+    startLoop()
+  } catch (err) {
+    console.error(err)
+    window.alert('Unable to initialize audio source.')
+    showStartup()
+  }
+}
+
+function onFileSelected (event) {
+  const files = event.target.files
+  if (!files || files.length === 0) {
+    return
+  }
+
+  const file = files[0]
+  const context = new AudioContext()
+  startVisualization(getFileSource(context, file), context)
+}
+
+function onUseMic () {
+  const context = new AudioContext()
+  startVisualization(getMic(context), context)
+}
+
+if (micButton) {
+  micButton.addEventListener('click', onUseMic)
+}
+
+if (fileButton) {
+  fileButton.addEventListener('click', () => fileInput.click())
+}
+
+if (fileInput) {
+  fileInput.addEventListener('change', onFileSelected)
+}
+
 if (module.hot) {
-  // this module is hot reloadable
   module.hot.accept()
 
   module.hot.dispose(() => {
     window.cancelAnimationFrame(timer)
-    // clearTimeout(timer)
-    audio.getContext().close()
+    if (audio && audio.getContext) {
+      audio.getContext().close()
+    }
   })
 }

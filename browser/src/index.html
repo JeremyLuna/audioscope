@@ -5,15 +5,70 @@
       <style>
         body {
           margin: 0;
+          font-family: Arial, Helvetica, sans-serif;
+          background: #000;
+          color: #fff;
         }
         canvas {
           display: block;
           width: 100vw;
           height: 100vh;
         }
+        .startup {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.8);
+          z-index: 10;
+        }
+        .startup__panel {
+          max-width: 360px;
+          width: 100%;
+          padding: 24px;
+          border: 1px solid #444;
+          border-radius: 16px;
+          background: rgba(16, 18, 25, 0.95);
+          text-align: center;
+        }
+        .startup__panel h1 {
+          margin: 0 0 12px;
+          font-size: 1.8rem;
+        }
+        .startup__panel p {
+          margin: 0 0 20px;
+          color: #ddd;
+        }
+        .startup__panel button {
+          width: 100%;
+          margin: 8px 0;
+          padding: 14px 18px;
+          font-size: 1rem;
+          color: #fff;
+          background: #1976d2;
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+        }
+        .startup__panel button.secondary {
+          background: #424242;
+        }
+        .startup__panel button:hover {
+          opacity: 0.95;
+        }
       </style>
   </head>
   <body>
+    <div id="startup" class="startup">
+      <div class="startup__panel">
+        <h1>Audioscope</h1>
+        <p>Choose a source to start visualizing audio.</p>
+        <button id="use-mic">Use microphone</button>
+        <button id="use-file" class="secondary">Upload music file</button>
+        <input id="file-input" type="file" accept="audio/*" hidden>
+      </div>
+    </div>
     <canvas id="c"></canvas>
     <script src="bundle.js"></script>
   </body>
