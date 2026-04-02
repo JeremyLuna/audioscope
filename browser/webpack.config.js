@@ -14,6 +14,13 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.worklet\.js$/,
+        type: 'asset/resource',
+        generator: {
+          filename: '[name][ext]'
+        }
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {

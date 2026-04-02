@@ -81,39 +81,50 @@ function createHilbertFilter (context, N) {
   return [delay, hilbert]
 }
 
-function createBufferCopy (context, buffer) {
-  let copyNode = context.createScriptProcessor(buffer.length, 1, 1)
-  copyNode.onaudioprocess = (e) => {
-    e.inputBuffer.copyFromChannel(buffer, 0)
+
+async function createSampleExtractorNode(context, buffer, N) {
+  // Load the worklet module if not already loaded
+  // The path must match the emitted file from webpack
+  if (!context.audioWorklet.modules || !context.audioWorklet.modules.includes('sample-extractor')) {
+    // Use relative path from index.html served root
+    await context.audioWorklet.addModule('sample-extractor.worklet.js');
   }
-  return copyNode
+  const node = new AudioWorkletNode(context, 'sample-extractor', {
+    processorOptions: { bufferSize: N }
+  });
+  node.port.onmessage = (event) => {
+    if (event.data.type === 'samples') {
+      buffer.set(event.data.samples);
+    }
+  };
+  return node;
 }
 
 export default async function createAudio (N, sourcePromise, context = new AudioContext()) {
-  const timeSamples = new Float32Array(N)
-  const quadSamples = new Float32Array(N)
+  const timeSamples = new Float32Array(N);
+  const quadSamples = new Float32Array(N);
 
-  const [delay, hilbert] = createHilbertFilter(context, N)
-  const time = createBufferCopy(context, timeSamples)
-  const quad = createBufferCopy(context, quadSamples)
+  const [delay, hilbert] = createHilbertFilter(context, N);
+  const time = await createSampleExtractorNode(context, timeSamples, N);
+  const quad = await createSampleExtractorNode(context, quadSamples, N);
 
-  const input = await sourcePromise
-  input.connect(delay)
-  input.connect(hilbert)
-  hilbert.connect(time)
-  delay.connect(quad)
-  time.connect(context.destination)
-  quad.connect(context.destination)
+  const input = await sourcePromise;
+  input.connect(delay);
+  input.connect(hilbert);
+  hilbert.connect(time);
+  delay.connect(quad);
+  time.connect(context.destination);
+  quad.connect(context.destination);
 
   return {
     getContext () {
-      return context
+      return context;
     },
     getTimeSamples () {
-      return timeSamples
+      return timeSamples;
     },
     getQuadSamples () {
-      return quadSamples
+      return quadSamples;
     }
-  }
+  };
 }
