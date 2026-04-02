@@ -2,50 +2,31 @@
 
 A collection of audio visualizers true to the sound.
 
+## Which Implementation?
+
+- **Rust app (`rust/`)**: native desktop app with PortAudio + OpenGL rendering.
+- **Browser app (`browser/`)**: Web Audio + WebGL implementation running in the browser.
+
+## Quick Start
+
+- Rust: see [rust/README.md](rust/README.md)
+- Browser: see [browser/README.md](browser/README.md)
+
 ## Implemented Views
 
 - Analytic (Hilbert Scope)
 
-## How to Run
+## Shared Concepts
 
-### 1. Install Dependencies
-
-This project requires `portaudio` to be installed on your system.
-
-**macOS (using Homebrew):**
-```bash
-brew install portaudio
-brew install pkg-config
-```
-
-**Other Systems:**
-Please refer to the [rust-portaudio installation guide](https://github.com/RustAudio/rust-portaudio#installation) for instructions for your operating system.
-
-### 2. Build and Run
-
-Once the dependencies are installed, you can build and run the application using Cargo:
-
-```bash
-cargo run --release -- config.toml
-```
-
-I also run like this to avoid all the warnings and focus on the errors:
-```bash
-RUSTFLAGS="-Awarnings" cargo run --release -- config.toml
-```
-
-This will start the audio visualizer using your default audio input device. On macOS, this is typically the built-in microphone.
-
-### Troubleshooting
-
-- **Shaders not found:** The application needs to be run from the root of the project directory so it can find the `src/glsl` directory, where the shaders are located.
-- **Audio input:** If you want to visualize audio from a source other than your microphone, you may need to use a tool like [Soundflower](httpsd://github.com/mattingalls/Soundflower) on macOS to route audio between applications.
+- Both implementations visualize an analytic signal built from incoming audio.
+- Rendered frames are snapshots of the latest available sample window.
+- Implementation-specific setup and troubleshooting live with each implementation.
 
 ## Additional Documentation
 
 - [A high level explanation of the visualizer](https://medium.com/@conundrumer/a-perceptually-meaningful-audio-visualizer-ee72051781bc#.p87d5rrxg)
-- [Project Trello Board](https://trello.com/b/je2p03G7/audioscope)
 
-## Browser Version
+## Repository Layout
 
-The browser implementation lives in [browser](browser). For setup, run/build commands, and implementation notes on the sample pipeline, see [browser/README.md](browser/README.md).
+- `rust/`: native implementation, shaders, config, and Cargo project.
+- `browser/`: browser implementation, webpack setup, and web source files.

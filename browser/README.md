@@ -2,7 +2,7 @@
 
 A collection of audio visualizers true to the sound, for the browser.
 
-## Run
+## Quick Start
 
 Install dependencies:
 
@@ -22,6 +22,25 @@ Build production bundle:
 npm run build
 ```
 
+Open `http://localhost:8080` while the dev server is running.
+
+## Project Structure
+
+```text
+src/
+	index.js
+	audio.js
+	display.js
+	sample-extractor.worklet.js
+	index.html
+	line.vert
+	line.frag
+```
+
+- `audio.js`: AudioWorklet setup and stream ingestion.
+- `display.js`: rendering loop and draw behavior.
+- `sample-extractor.worklet.js`: sample extraction on the audio thread.
+
 ## Data Flow
 
 - Audio is captured in an AudioWorklet and emitted as sample blocks.
@@ -40,3 +59,8 @@ npm run build
 
 - Add min/max bucket resampling for better transient preservation at lower draw rates.
 - Add optional debug stats for sample index deltas and render cadence.
+
+## Related Docs
+
+- Repository overview: [../README.md](../README.md)
+- Native implementation: [../rust/README.md](../rust/README.md)
