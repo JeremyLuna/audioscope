@@ -64,3 +64,9 @@ src/
 
 - Repository overview: [../README.md](../README.md)
 - Native implementation: [../rust/README.md](../rust/README.md)
+
+TODO:
+Bugs:
+Can't hear playback.
+Visualization scales with volume slider.
+Play and Pause are not always responsive; If clicked on the text, its ignored, if clicked on the button, it works.
