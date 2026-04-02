@@ -57,6 +57,86 @@
         .startup__panel button:hover {
           opacity: 0.95;
         }
+        .controls {
+          position: fixed;
+          left: 16px;
+          right: 16px;
+          bottom: 16px;
+          padding: 12px 14px;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-radius: 14px;
+          background: rgba(8, 10, 14, 0.82);
+          backdrop-filter: blur(8px);
+          z-index: 20;
+          transition: opacity 0.2s ease;
+        }
+        .controls--hidden {
+          opacity: 0;
+          pointer-events: none;
+        }
+        .controls--off {
+          display: none;
+        }
+        .controls__row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .controls__time {
+          min-width: 90px;
+          font-size: 0.9rem;
+          color: #d6d6d6;
+        }
+        .controls__button {
+          border: none;
+          border-radius: 10px;
+          background: #1976d2;
+          color: #fff;
+          min-width: 80px;
+          padding: 10px 14px;
+          font-size: 0.95rem;
+          cursor: pointer;
+        }
+        .controls__button:hover {
+          opacity: 0.95;
+        }
+        .controls__progress {
+          width: 100%;
+          margin: 0;
+        }
+        .controls__volume {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 140px;
+          color: #d6d6d6;
+          font-size: 0.9rem;
+        }
+        .controls__volume input {
+          width: 100%;
+        }
+        input[type='range'] {
+          accent-color: #50a8ff;
+        }
+        @media (max-width: 720px) {
+          .controls {
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            padding: 10px;
+          }
+          .controls__row {
+            flex-wrap: wrap;
+          }
+          .controls__time {
+            min-width: 0;
+            flex: 1;
+          }
+          .controls__volume {
+            width: 100%;
+            min-width: 0;
+          }
+        }
       </style>
   </head>
   <body>
@@ -70,6 +150,17 @@
       </div>
     </div>
     <canvas id="c"></canvas>
+    <div id="controls" class="controls controls--off controls--hidden" aria-live="polite">
+      <input id="progress-slider" class="controls__progress" type="range" min="0" max="1000" value="0" step="1" aria-label="Playback position">
+      <div class="controls__row">
+        <button id="play-pause" class="controls__button" type="button">Pause</button>
+        <span id="time-label" class="controls__time">00:00 / 00:00</span>
+        <label class="controls__volume" for="volume-slider">
+          Volume
+          <input id="volume-slider" type="range" min="0" max="100" step="1" value="100" aria-label="Volume">
+        </label>
+      </div>
+    </div>
     <script src="bundle.js"></script>
   </body>
 </html>

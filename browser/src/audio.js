@@ -39,11 +39,10 @@ export async function getFileSource (context, file) {
     context.decodeAudioData(arrayBuffer, resolve, reject)
   })
 
-  const source = context.createBufferSource()
-  source.buffer = audioBuffer
-  source.loop = true
-  source.start(0)
-  return source
+  return {
+    kind: 'file',
+    buffer: audioBuffer
+  }
 }
 
 // const FFT_SIZE = 1024 // guessing webaudio will choose this length
@@ -117,36 +116,182 @@ async function createSampleExtractorNode(context, buffer, N) {
 }
 
 export default async function createAudio (N, sourcePromise, context = new AudioContext()) {
-  const timeSamples = new Float32Array(N);
-  const quadSamples = new Float32Array(N);
+  const timeSamples = new Float32Array(N)
+  const quadSamples = new Float32Array(N)
 
-  const [delay, hilbert] = createHilbertFilter(context, N);
-  const time = await createSampleExtractorNode(context, timeSamples, N);
-  const quad = await createSampleExtractorNode(context, quadSamples, N);
+  const [delay, hilbert] = createHilbertFilter(context, N)
+  const time = await createSampleExtractorNode(context, timeSamples, N)
+  const quad = await createSampleExtractorNode(context, quadSamples, N)
+  const gain = context.createGain()
+  gain.gain.value = 1
 
-  const input = await sourcePromise;
-  input.connect(delay);
-  input.connect(hilbert);
-  hilbert.connect(time);
-  delay.connect(quad);
-  time.connect(context.destination);
-  quad.connect(context.destination);
+  const sourceInfo = await sourcePromise
+  const fileBuffer = sourceInfo && sourceInfo.kind === 'file' ? sourceInfo.buffer : null
+  const streamInput = !fileBuffer ? sourceInfo : null
+
+  let fileSource = null
+  let fileOffsetSeconds = 0
+  let fileStartContextTime = 0
+  let filePlaying = false
+
+  function connectGraph (inputNode) {
+    inputNode.connect(gain)
+  }
+
+  function createAndStartFileSource (offsetSeconds) {
+    if (!fileBuffer) {
+      return
+    }
+
+    const duration = fileBuffer.duration || 0
+    if (duration <= 0) {
+      return
+    }
+
+    const normalizedOffset = ((offsetSeconds % duration) + duration) % duration
+    const source = context.createBufferSource()
+    source.buffer = fileBuffer
+    source.loop = true
+    connectGraph(source)
+    source.start(0, normalizedOffset)
+
+    fileSource = source
+    fileOffsetSeconds = normalizedOffset
+    fileStartContextTime = context.currentTime
+    filePlaying = true
+  }
+
+  function stopFileSource () {
+    if (!fileSource) {
+      return
+    }
+
+    try {
+      fileSource.stop()
+    } catch (err) {
+      // Ignore stop() on an already-stopped source.
+    }
+    fileSource.disconnect()
+    fileSource = null
+  }
+
+  gain.connect(delay)
+  gain.connect(hilbert)
+  hilbert.connect(time)
+  delay.connect(quad)
+  time.connect(context.destination)
+  quad.connect(context.destination)
+
+  if (fileBuffer) {
+    createAndStartFileSource(0)
+  } else {
+    connectGraph(streamInput)
+  }
+
+  function getFileDuration () {
+    return fileBuffer ? fileBuffer.duration : 0
+  }
+
+  function isFileSource () {
+    return !!fileBuffer
+  }
+
+  function getPlaybackTime () {
+    if (!fileBuffer) {
+      return 0
+    }
+
+    const duration = getFileDuration()
+    if (duration <= 0) {
+      return 0
+    }
+
+    if (!filePlaying) {
+      return fileOffsetSeconds
+    }
+
+    const elapsed = context.currentTime - fileStartContextTime
+    return (fileOffsetSeconds + elapsed) % duration
+  }
+
+  function pauseFile () {
+    if (!fileBuffer || !filePlaying) {
+      return
+    }
+
+    fileOffsetSeconds = getPlaybackTime()
+    filePlaying = false
+    stopFileSource()
+  }
+
+  function resumeFile () {
+    if (!fileBuffer || filePlaying) {
+      return
+    }
+
+    createAndStartFileSource(fileOffsetSeconds)
+  }
+
+  function seekFile (timeSeconds) {
+    if (!fileBuffer) {
+      return
+    }
+
+    const duration = getFileDuration()
+    const clamped = Math.max(0, Math.min(duration, timeSeconds || 0))
+
+    if (duration <= 0) {
+      fileOffsetSeconds = 0
+      return
+    }
+
+    if (filePlaying) {
+      stopFileSource()
+      createAndStartFileSource(clamped)
+    } else {
+      fileOffsetSeconds = clamped % duration
+    }
+  }
+
+  function isPlayingFile () {
+    return !!fileBuffer && filePlaying
+  }
+
+  function setVolume (value) {
+    const clamped = Math.max(0, Math.min(1, value))
+    gain.gain.setValueAtTime(clamped, context.currentTime)
+  }
+
+  function getVolume () {
+    return gain.gain.value
+  }
 
   return {
     getContext () {
-      return context;
+      return context
     },
     getTimeSamples () {
-      return timeSamples;
+      return timeSamples
     },
     getQuadSamples () {
-      return quadSamples;
+      return quadSamples
     },
     getTimeSampleIndex () {
       return time.getSampleIndex()
     },
     getQuadSampleIndex () {
       return quad.getSampleIndex()
-    }
-  };
+    },
+    isFileSource,
+    isPlayingFile,
+    getDuration () {
+      return getFileDuration()
+    },
+    getPlaybackTime,
+    pauseFile,
+    resumeFile,
+    seekFile,
+    setVolume,
+    getVolume
+  }
 }
