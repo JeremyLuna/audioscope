@@ -2,8 +2,7 @@
 if (document.location.hostname !== 'localhost' && window.location.protocol !== 'https:') {
   window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length)
 }
-let AudioContext = window.AudioContext || window.webkitAudioContext
-navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia)
+const AudioContext = window.AudioContext || window.webkitAudioContext
 
 export function getMic (context) {
   const constraints = {
@@ -22,27 +21,15 @@ export function getMic (context) {
       .then(stream => context.createMediaStreamSource(stream))
   }
 
+  const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia
+  if (!getUserMedia) {
+    return Promise.reject(new Error('getUserMedia is not supported in this browser'))
+  }
+
   return new Promise((resolve, reject) => {
-    const options = {
-      video: false,
-      audio: {
-        optional: [
-          {channelCount: 2}, // this doesn't work yet, only takes in summed mono
-          {echoCancellation: false},
-          {mozAutoGainControl: false},
-          {mozNoiseSuppression: false},
-          {googEchoCancellation: false},
-          {googAutoGainControl: false},
-          {googNoiseSuppression: false},
-          {googHighpassFilter: false}
-        ]
-      }
-    }
-    const onGetUserMedia = (stream) => {
-      const input = context.createMediaStreamSource(stream)
-      resolve(input)
-    }
-    navigator.getUserMedia(options, onGetUserMedia, reject)
+    getUserMedia.call(navigator, constraints, stream => {
+      resolve(context.createMediaStreamSource(stream))
+    }, reject)
   })
 }
 
