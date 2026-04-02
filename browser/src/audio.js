@@ -135,7 +135,13 @@ export default async function createAudio (N, sourcePromise, context = new Audio
   let filePlaying = false
 
   function connectGraph (inputNode) {
-    inputNode.connect(gain)
+    // Analysis branch: bypass gain so visualization is unaffected by the volume slider
+    inputNode.connect(delay)
+    inputNode.connect(hilbert)
+    // Playback branch: through gain to speakers (skipped for mic input to avoid feedback)
+    if (fileBuffer) {
+      inputNode.connect(gain)
+    }
   }
 
   function createAndStartFileSource (offsetSeconds) {
@@ -175,12 +181,9 @@ export default async function createAudio (N, sourcePromise, context = new Audio
     fileSource = null
   }
 
-  gain.connect(delay)
-  gain.connect(hilbert)
   hilbert.connect(time)
   delay.connect(quad)
-  time.connect(context.destination)
-  quad.connect(context.destination)
+  gain.connect(context.destination)
 
   if (fileBuffer) {
     createAndStartFileSource(0)

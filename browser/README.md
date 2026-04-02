@@ -22,7 +22,7 @@ Build production bundle:
 npm run build
 ```
 
-Open `http://localhost:8080` while the dev server is running.
+Open `http://localhost:8080` in Chrome while the dev server is running.
 
 ## Project Structure
 
@@ -67,6 +67,4 @@ src/
 
 TODO:
 Bugs:
-Can't hear playback.
-Visualization scales with volume slider.
 In Safari (not Chrome), there is a Z Ordering issue. Play and Pause are not always responsive; If clicked on the text, its ignored, if clicked on the button, it works.
