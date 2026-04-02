@@ -31,11 +31,19 @@ function startLoop () {
     return
   }
 
+  let previousPoint = { x: 0, y: 0 }
+
   function loop () {
     const samplesX = audio.getTimeSamples()
     const samplesY = audio.getQuadSamples()
 
-    display.draw(samplesX, samplesY)
+    display.draw(samplesX, samplesY, previousPoint)
+
+    previousPoint = {
+      x: samplesX[N - 1],
+      y: samplesY[N - 1]
+    }
+
     timer = window.requestAnimationFrame(loop)
   }
 
