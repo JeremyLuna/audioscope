@@ -69,4 +69,4 @@ TODO:
 Bugs:
 Can't hear playback.
 Visualization scales with volume slider.
-Play and Pause are not always responsive; If clicked on the text, its ignored, if clicked on the button, it works. This bug occurs in Safari, not Chrome.
+In Safari (not Chrome), there is a Z Ordering issue. Play and Pause are not always responsive; If clicked on the text, its ignored, if clicked on the button, it works.
