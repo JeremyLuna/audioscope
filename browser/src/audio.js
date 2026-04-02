@@ -83,6 +83,20 @@ function createHilbertFilter (context, N) {
 
 
 async function createSampleExtractorNode(context, buffer, N) {
+  function appendSamples(target, samples) {
+    const sampleCount = samples.length
+
+    if (sampleCount >= N) {
+      target.set(samples.subarray(sampleCount - N))
+      return
+    }
+
+    target.copyWithin(0, sampleCount)
+    target.set(samples, N - sampleCount)
+  }
+
+  let latestSampleIndex = 0
+
   // Load the worklet module if not already loaded
   // The path must match the emitted file from webpack
   if (!context.audioWorklet.modules || !context.audioWorklet.modules.includes('sample-extractor')) {
@@ -94,9 +108,11 @@ async function createSampleExtractorNode(context, buffer, N) {
   });
   node.port.onmessage = (event) => {
     if (event.data.type === 'samples') {
-      buffer.set(event.data.samples);
+      appendSamples(buffer, event.data.samples)
+      latestSampleIndex = event.data.sampleIndex || (latestSampleIndex + event.data.samples.length)
     }
   };
+  node.getSampleIndex = () => latestSampleIndex
   return node;
 }
 
@@ -125,6 +141,12 @@ export default async function createAudio (N, sourcePromise, context = new Audio
     },
     getQuadSamples () {
       return quadSamples;
+    },
+    getTimeSampleIndex () {
+      return time.getSampleIndex()
+    },
+    getQuadSampleIndex () {
+      return quad.getSampleIndex()
     }
   };
 }

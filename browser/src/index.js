@@ -30,19 +30,24 @@ function startLoop () {
   if (!audio || !display) {
     return
   }
-
-  let previousPoint = { x: 0, y: 0 }
+  let lastTimeSampleIndex = -1
+  let lastQuadSampleIndex = -1
 
   function loop () {
+    const timeSampleIndex = audio.getTimeSampleIndex()
+    const quadSampleIndex = audio.getQuadSampleIndex()
+
+    if (timeSampleIndex === lastTimeSampleIndex && quadSampleIndex === lastQuadSampleIndex) {
+      timer = window.requestAnimationFrame(loop)
+      return
+    }
+
     const samplesX = audio.getTimeSamples()
     const samplesY = audio.getQuadSamples()
 
-    display.draw(samplesX, samplesY, previousPoint)
-
-    previousPoint = {
-      x: samplesX[N - 1],
-      y: samplesY[N - 1]
-    }
+    display.draw(samplesX, samplesY)
+    lastTimeSampleIndex = timeSampleIndex
+    lastQuadSampleIndex = quadSampleIndex
 
     timer = window.requestAnimationFrame(loop)
   }

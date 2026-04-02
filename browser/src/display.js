@@ -19,17 +19,14 @@ function writeSample (textureData, i, x, y) {
   textureData[j + 3] = y & 0xFF
 }
 
-function updateTextureData (textureData, samplesX, samplesY, N, previousX, previousY) {
-  writeSample(textureData, 0, encodeSample(previousX), encodeSample(previousY))
-
+function updateTextureData (textureData, samplesX, samplesY, N) {
   for (let i = 0; i < N; i++) {
-    writeSample(textureData, i + 1, encodeSample(samplesX[i]), encodeSample(samplesY[i]))
+    writeSample(textureData, i, encodeSample(samplesX[i]), encodeSample(samplesY[i]))
   }
 }
 
 export default function createDisplay (canvas, N) {
   let gl = canvas.getContext('webgl')
-  let pointCount = N + 1
 
   if (gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) === 0) {
     window.alert('sorry, this app wont work on your device. try a different one, or complain to me to make it work on your device')
@@ -45,13 +42,13 @@ export default function createDisplay (canvas, N) {
   let bufferInfo = twgl.createBufferInfoFromArrays(gl, {
     index: {
       numComponents: 1,
-      data: Array(4 * pointCount).fill(0).map((_, i) => i)
+      data: Array(4 * N).fill(0).map((_, i) => i)
     }
   })
 
-  let textureData = new Uint8Array(pointCount * M)
+  let textureData = new Uint8Array(N * M)
   let texOptions = {
-    width: pointCount,
+    width: N,
     height: 1,
     mag: gl.NEAREST,
     min: gl.NEAREST,
@@ -61,13 +58,13 @@ export default function createDisplay (canvas, N) {
   let tex = twgl.createTexture(gl, texOptions)
 
   return {
-    draw (samplesX, samplesY, previousPoint) {
+    draw (samplesX, samplesY) {
       twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio)
 
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      updateTextureData(textureData, samplesX, samplesY, N, previousPoint.x, previousPoint.y)
+      updateTextureData(textureData, samplesX, samplesY, N)
       twgl.setTextureFromArray(gl, tex, textureData, texOptions)
 
       twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo)
