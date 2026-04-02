@@ -45,3 +45,7 @@ This will start the audio visualizer using your default audio input device. On m
 
 - [A high level explanation of the visualizer](https://medium.com/@conundrumer/a-perceptually-meaningful-audio-visualizer-ee72051781bc#.p87d5rrxg)
 - [Project Trello Board](https://trello.com/b/je2p03G7/audioscope)
+
+## Browser Version
+
+The browser implementation lives in [browser](browser). For setup, run/build commands, and implementation notes on the sample pipeline, see [browser/README.md](browser/README.md).
