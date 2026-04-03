@@ -5,6 +5,8 @@ if (document.location.hostname !== 'localhost' && window.location.protocol !== '
 const AudioContext = window.AudioContext || window.webkitAudioContext
 import sampleExtractorWorkletUrl from './sample-extractor.worklet.js'
 
+const loadedWorkletContexts = new WeakSet()
+
 export function getMic (context) {
   const constraints = {
     audio: {
@@ -97,21 +99,22 @@ async function createSampleExtractorNode(context, buffer, N) {
 
   let latestSampleIndex = 0
 
-  // Load the emitted worklet module asset.
-  if (!context.audioWorklet.modules || !context.audioWorklet.modules.includes('sample-extractor')) {
+  // Load the worklet module once per AudioContext.
+  if (!loadedWorkletContexts.has(context)) {
     await context.audioWorklet.addModule(sampleExtractorWorkletUrl)
+    loadedWorkletContexts.add(context)
   }
   const node = new AudioWorkletNode(context, 'sample-extractor', {
     processorOptions: { bufferSize: N }
-  });
+  })
   node.port.onmessage = (event) => {
     if (event.data.type === 'samples') {
       appendSamples(buffer, event.data.samples)
       latestSampleIndex = event.data.sampleIndex || (latestSampleIndex + event.data.samples.length)
     }
-  };
+  }
   node.getSampleIndex = () => latestSampleIndex
-  return node;
+  return node
 }
 
 export default async function createAudio (N, sourcePromise, context = new AudioContext()) {

@@ -9,7 +9,8 @@ module.exports = {
   output: {
     path: path.join(__dirname, '/dist'),
     filename: 'bundle.js',
-    publicPath: production ? '/audioscope/' : '/'
+    publicPath: 'auto',
+    clean: true
   },
   module: {
     rules: [
