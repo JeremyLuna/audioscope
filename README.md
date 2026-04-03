@@ -5,7 +5,8 @@ A collection of audio visualizers true to the sound.
 ## Which Implementation?
 
 - **Rust app (`rust/`)**: native desktop app with PortAudio + OpenGL rendering.
-- **Browser app (`browser/`)**: Web Audio + WebGL implementation running in the browser.
+- **Browser app (`browser/`)**: Web Audio + WebGL implementation running in the browser. There should
+be a working deployment of the main branch [here](https://jeremyluna.github.io/audioscope/)
 
 ## Quick Start
 
