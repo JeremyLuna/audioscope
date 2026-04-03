@@ -209,6 +209,7 @@ async function startVisualization (sourcePromise, context) {
     audio = await createAudio(N, sourcePromise, context)
     display = createDisplay(canvas, N)
 
+    display.setMicBoostEnabled(!audio.isFileSource())
     display.setAmplitudeScale(getAmplitudeScale())
     setControlsEnabled(true)
 

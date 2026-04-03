@@ -3,7 +3,7 @@ import twgl from 'twgl-base.js'
 import vs from './line.vert'
 import fs from './line.frag'
 
-const BASE_MAX_AMPLITUDE = 8.0
+const BASE_MAX_AMPLITUDE = 4.0
 const B = (1 << 16) - 1
 const M = 4
 function encodeSample (value) {
@@ -28,6 +28,12 @@ function updateTextureData (textureData, samplesX, samplesY, N) {
 export default function createDisplay (canvas, N) {
   let gl = canvas.getContext('webgl')
   let maxAmplitude = BASE_MAX_AMPLITUDE
+  let amplitudeScale = 1
+  let sourceScale = 1
+
+  function updateMaxAmplitude () {
+    maxAmplitude = BASE_MAX_AMPLITUDE * amplitudeScale * sourceScale
+  }
 
   function resizeCanvas () {
     return twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio)
@@ -87,8 +93,13 @@ export default function createDisplay (canvas, N) {
       return resizeCanvas()
     },
     setAmplitudeScale (scale) {
-      const safeScale = Math.max(0.25, Math.min(8, Number(scale) || 1))
-      maxAmplitude = BASE_MAX_AMPLITUDE * safeScale
+      const safeScale = Math.max(0.25, Math.min(4, Number(scale) || 1))
+      amplitudeScale = safeScale
+      updateMaxAmplitude()
+    },
+    setMicBoostEnabled (enabled) {
+      sourceScale = enabled ? 10 : 1
+      updateMaxAmplitude()
     }
   }
 }
