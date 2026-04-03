@@ -3,6 +3,7 @@ if (document.location.hostname !== 'localhost' && window.location.protocol !== '
   window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length)
 }
 const AudioContext = window.AudioContext || window.webkitAudioContext
+import sampleExtractorWorkletUrl from './sample-extractor.worklet.js'
 
 export function getMic (context) {
   const constraints = {
@@ -96,11 +97,9 @@ async function createSampleExtractorNode(context, buffer, N) {
 
   let latestSampleIndex = 0
 
-  // Load the worklet module if not already loaded
-  // The path must match the emitted file from webpack
+  // Load the emitted worklet module asset.
   if (!context.audioWorklet.modules || !context.audioWorklet.modules.includes('sample-extractor')) {
-    // Use relative path from index.html served root
-    await context.audioWorklet.addModule('sample-extractor.worklet.js');
+    await context.audioWorklet.addModule(sampleExtractorWorkletUrl)
   }
   const node = new AudioWorkletNode(context, 'sample-extractor', {
     processorOptions: { bufferSize: N }
