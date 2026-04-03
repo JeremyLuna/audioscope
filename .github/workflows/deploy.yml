@@ -24,7 +24,7 @@ jobs:
         working-directory: browser
       - run: npm run build
         working-directory: browser
-      - run: cp index.html browser/dist/index.html
+      - run: cp src/index.html dist/index.html
         working-directory: browser
       - uses: actions/upload-pages-artifact@v3
         with:
