@@ -115,6 +115,9 @@
         .controls__volume input {
           width: 100%;
         }
+        .controls--mic .controls__file-only {
+          display: none;
+        }
         input[type='range'] {
           accent-color: #50a8ff;
         }
@@ -151,13 +154,17 @@
     </div>
     <canvas id="c"></canvas>
     <div id="controls" class="controls controls--off controls--hidden" aria-live="polite">
-      <input id="progress-slider" class="controls__progress" type="range" min="0" max="1000" value="0" step="1" aria-label="Playback position">
+      <input id="progress-slider" class="controls__progress controls__file-only" type="range" min="0" max="1000" value="0" step="1" aria-label="Playback position">
       <div class="controls__row">
-        <button id="play-pause" class="controls__button" type="button">Pause</button>
-        <span id="time-label" class="controls__time">00:00 / 00:00</span>
-        <label class="controls__volume" for="volume-slider">
+        <button id="play-pause" class="controls__button controls__file-only" type="button">Pause</button>
+        <span id="time-label" class="controls__time controls__file-only">00:00 / 00:00</span>
+        <label class="controls__volume controls__file-only" for="volume-slider">
           Volume
           <input id="volume-slider" type="range" min="0" max="100" step="1" value="100" aria-label="Volume">
+        </label>
+        <label class="controls__volume" for="amplitude-slider">
+          Visualization Gain
+          <input id="amplitude-slider" type="range" min="25" max="400" step="1" value="100" aria-label="Visualization gain">
         </label>
       </div>
     </div>

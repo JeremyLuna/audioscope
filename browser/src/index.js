@@ -11,6 +11,7 @@ const controls = document.getElementById('controls')
 const playPauseButton = document.getElementById('play-pause')
 const progressSlider = document.getElementById('progress-slider')
 const volumeSlider = document.getElementById('volume-slider')
+const amplitudeSlider = document.getElementById('amplitude-slider')
 const timeLabel = document.getElementById('time-label')
 
 const N = 512
@@ -23,6 +24,14 @@ let controlsHideTimer = null
 let controlsEnabled = false
 let pendingSeekTime = null
 let isScrubbing = false
+
+function getAmplitudeScale () {
+  if (!amplitudeSlider) {
+    return 1
+  }
+
+  return Number(amplitudeSlider.value) / 100
+}
 
 function hideStartup () {
   if (startup) {
@@ -155,6 +164,11 @@ function cleanupSession () {
 
   audio = null
   display = null
+
+  if (amplitudeSlider) {
+    amplitudeSlider.value = '100'
+  }
+
   setControlsEnabled(false)
 }
 
@@ -193,12 +207,18 @@ async function startVisualization (sourcePromise, context) {
   try {
     audio = await createAudio(N, sourcePromise, context)
     display = createDisplay(canvas, N)
-    if (audio.isFileSource()) {
-      setControlsEnabled(true)
-      refreshControlsUI()
-    } else {
-      setControlsEnabled(false)
+
+    display.setAmplitudeScale(getAmplitudeScale())
+    setControlsEnabled(true)
+
+    if (controls) {
+      controls.classList.toggle('controls--mic', !audio.isFileSource())
     }
+
+    if (audio.isFileSource()) {
+      refreshControlsUI()
+    }
+
     hideStartup()
     startLoop()
   } catch (err) {
@@ -296,6 +316,17 @@ if (volumeSlider) {
     }
 
     audio.setVolume(Number(volumeSlider.value) / 100)
+    onActivity()
+  })
+}
+
+if (amplitudeSlider) {
+  amplitudeSlider.addEventListener('input', () => {
+    if (!display) {
+      return
+    }
+
+    display.setAmplitudeScale(getAmplitudeScale())
     onActivity()
   })
 }

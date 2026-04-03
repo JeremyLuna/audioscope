@@ -3,11 +3,11 @@ import twgl from 'twgl-base.js'
 import vs from './line.vert'
 import fs from './line.frag'
 
-const maxAmplitude = 4.0
+const BASE_MAX_AMPLITUDE = 4.0
 const B = (1 << 16) - 1
 const M = 4
 function encodeSample (value) {
-  let clamped = Math.max(0, Math.min(2 * maxAmplitude, 0.5 + 0.5 * value / maxAmplitude))
+  let clamped = Math.max(0, Math.min(2 * BASE_MAX_AMPLITUDE, 0.5 + 0.5 * value / BASE_MAX_AMPLITUDE))
   return (clamped * B) | 0
 }
 
@@ -27,6 +27,7 @@ function updateTextureData (textureData, samplesX, samplesY, N) {
 
 export default function createDisplay (canvas, N) {
   let gl = canvas.getContext('webgl')
+  let maxAmplitude = BASE_MAX_AMPLITUDE
 
   if (gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) === 0) {
     window.alert('sorry, this app wont work on your device. try a different one, or complain to me to make it work on your device')
@@ -77,6 +78,10 @@ export default function createDisplay (canvas, N) {
       twgl.bindFramebufferInfo(gl)
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
       twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP)
+    },
+    setAmplitudeScale (scale) {
+      const safeScale = Math.max(0.25, Math.min(4, Number(scale) || 1))
+      maxAmplitude = BASE_MAX_AMPLITUDE * safeScale
     }
   }
 }
