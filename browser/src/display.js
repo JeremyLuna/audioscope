@@ -3,7 +3,7 @@ import twgl from 'twgl-base.js'
 import vs from './line.vert'
 import fs from './line.frag'
 
-const BASE_MAX_AMPLITUDE = 4.0
+const BASE_MAX_AMPLITUDE = 8.0
 const B = (1 << 16) - 1
 const M = 4
 function encodeSample (value) {
@@ -87,7 +87,7 @@ export default function createDisplay (canvas, N) {
       return resizeCanvas()
     },
     setAmplitudeScale (scale) {
-      const safeScale = Math.max(0.25, Math.min(4, Number(scale) || 1))
+      const safeScale = Math.max(0.25, Math.min(8, Number(scale) || 1))
       maxAmplitude = BASE_MAX_AMPLITUDE * safeScale
     }
   }
