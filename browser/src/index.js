@@ -182,10 +182,11 @@ function startLoop () {
   function loop () {
     refreshControlsUI()
 
+    const didResize = display.resize()
     const timeSampleIndex = audio.getTimeSampleIndex()
     const quadSampleIndex = audio.getQuadSampleIndex()
 
-    if (timeSampleIndex === lastTimeSampleIndex && quadSampleIndex === lastQuadSampleIndex) {
+    if (!didResize && timeSampleIndex === lastTimeSampleIndex && quadSampleIndex === lastQuadSampleIndex) {
       timer = window.requestAnimationFrame(loop)
       return
     }
@@ -336,6 +337,8 @@ window.addEventListener('mousedown', onActivity)
 window.addEventListener('touchstart', onActivity, { passive: true })
 window.addEventListener('touchmove', onActivity, { passive: true })
 window.addEventListener('keydown', onActivity)
+window.addEventListener('resize', onActivity)
+window.addEventListener('orientationchange', onActivity)
 
 if (module.hot) {
   module.hot.accept()

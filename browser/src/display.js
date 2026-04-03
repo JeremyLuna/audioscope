@@ -29,6 +29,10 @@ export default function createDisplay (canvas, N) {
   let gl = canvas.getContext('webgl')
   let maxAmplitude = BASE_MAX_AMPLITUDE
 
+  function resizeCanvas () {
+    return twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio)
+  }
+
   if (gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) === 0) {
     window.alert('sorry, this app wont work on your device. try a different one, or complain to me to make it work on your device')
   }
@@ -60,7 +64,7 @@ export default function createDisplay (canvas, N) {
 
   return {
     draw (samplesX, samplesY) {
-      twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio)
+      resizeCanvas()
 
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
@@ -78,6 +82,9 @@ export default function createDisplay (canvas, N) {
       twgl.bindFramebufferInfo(gl)
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
       twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP)
+    },
+    resize () {
+      return resizeCanvas()
     },
     setAmplitudeScale (scale) {
       const safeScale = Math.max(0.25, Math.min(4, Number(scale) || 1))
